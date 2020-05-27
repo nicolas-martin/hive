@@ -1,0 +1,29 @@
+package main
+
+import (
+	"log"
+
+	"github.com/nicolas-martin/hive/api/bot/client"
+	"github.com/nicolas-martin/hive/api/config"
+	"github.com/nicolas-martin/hive/api/repo"
+)
+
+func main() {
+	cfg := config.Load()
+	s := client.NewSlack(cfg)
+	r := repo.NewRepo(cfg)
+	r.AddUser("martinni39")
+
+	for _, v := range r.UserData {
+		userID, err := s.GetUserID(v)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = s.PostMessage(userID, "Hello world")
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+}
