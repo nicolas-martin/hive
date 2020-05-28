@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/nicolas-martin/hive/api/bot/client"
 	"github.com/nicolas-martin/hive/api/config"
 	"github.com/nicolas-martin/hive/api/model"
@@ -54,12 +55,18 @@ func (h *Handler) CreateUpdate(c *gin.Context) {
 			c.String(http.StatusBadRequest, fmt.Sprintf("error finding user %s", v))
 			return
 		}
+
+		// NOTE: Update our record of the user
+		// h.repo.UpdateSlackUserIDByUserName(v, userID)
 		userIDs = append(userIDs, userID)
 	}
 
 	for _, v := range userIDs {
+		// TODO: this will probably be done somewhere else
+		userID, _ := h.repo.GetUserIDBySlackUserID(v)
+
 		ud := &model.UserUpdate{
-			SlackUserID:  v,
+			UserID:       userID,
 			RecordingURL: "",
 			UpdateID:     updateID,
 		}
@@ -81,8 +88,19 @@ func (h *Handler) CreateUpdate(c *gin.Context) {
 
 // Upload uploads a file
 func (h *Handler) Upload(c *gin.Context) {
-	user := c.PostForm("user")
-	tenant := c.PostForm("tenant")
+	updateIDstr := c.PostForm("id")
+	updateID, err := uuid.Parse(updateIDstr)
+	if err != nil {
+		c.String(http.StatusBadRequest, fmt.Sprintf("Invalid UserUpdate %s", updateIDstr))
+		return
+	}
+
+	// NOTE: Check if the ID received is a valid update
+	v, ok := h.repo.UserUpdateData[updateID]
+	if !ok {
+		c.String(http.StatusBadRequest, fmt.Sprintf("UserUpdateID not found"))
+		return
+	}
 
 	file, err := c.FormFile("file")
 	if err != nil {
@@ -91,11 +109,15 @@ func (h *Handler) Upload(c *gin.Context) {
 	}
 
 	filename := filepath.Base(file.Filename)
-	if err := c.SaveUploadedFile(file, "up/"+filename); err != nil {
+	path := fmt.Sprintf("up/%s", filename)
+	if err := c.SaveUploadedFile(file, path); err != nil {
 		c.String(http.StatusBadRequest, fmt.Sprintf("upload file err: %s", err.Error()))
 		return
 	}
 
-	c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully with fields user=%s and tenant=%s.", file.Filename, user, tenant))
+	// NOTE: Update recording URL
+	v.RecordingURL = path
+
+	c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully with updateID=%s.", file.Filename, updateID))
 	return
 }

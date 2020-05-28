@@ -1,10 +1,9 @@
 import Axios from 'axios'
 
-export function Upload(file){
+export function Upload(file, id){
   var fd = new FormData();
-  fd.set('user', 'user_here')
-  fd.set('tenant', '1')
-  fd.set('file', file, 'ok.webm')
+  fd.set('id', id)
+  fd.set('file', file, id+'.webm')
 
   Axios.post('http://localhost:8080/upload', fd )
   .then((response) => {

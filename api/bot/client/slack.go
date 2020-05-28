@@ -2,7 +2,8 @@ package client
 
 import (
 	"fmt"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/nicolas-martin/hive/api/config"
 	"github.com/slack-go/slack"
@@ -31,6 +32,11 @@ func (s *SlackClient) PostMessage(userID string, message string) error {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	log.WithFields(log.Fields{
+		"SENT":    channelID,
+		"Message": message,
+	}).Info()
 
 	return err
 }

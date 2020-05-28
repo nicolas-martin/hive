@@ -89,7 +89,7 @@ class AudioExample extends React.Component {
 		const paused = this.state.paused;
 
 		return (
-			<div ref="app">
+			<div>
 				<h3>Audio Recorder</h3>
 				<MediaCapturer
 					constraints={{ audio: true }}

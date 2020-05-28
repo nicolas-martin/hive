@@ -7,23 +7,22 @@ import * as api from '../functions/api';
 class App extends Component {
   constructor(props) {
     super(props);
+    console.log('=====')
+    console.log(this.props.id)
     this.state = {
       // file: null
     };
   }
-	render() {
-		return (
-			<div>
-				<h1>React Multimedia Capture Test</h1>
-				<hr />
-				<AudioExample /> 
-				<hr />
-        <button onClick={() => api.Upload('CMON')} >
-          Upload
-        </button>
-			</div>
-		);
-	}
+render() {
+	return (
+		<div>
+			<h1>React Multimedia Capture Test</h1>
+			<hr />
+			<AudioExample id={this.props.id}/> 
+			<hr />
+		</div>
+	);
+}
 };
 
 // ReactDOM.render(
