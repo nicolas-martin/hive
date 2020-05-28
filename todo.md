@@ -7,7 +7,12 @@
 - [x] Slack bot as client in the handler
 - [x] Create an "update request" from the API
 - [x] Send a link to record `http://localhost:3000/record/{UserUpdateID}`
-- [ ] Create the `/record/{UserUpdateID}` route in the frontend
-- [ ] Use the `userID` and the `requestID` in the upload. Validate that it was created first.
-- [ ] Serve the .webm from the frontend (where? right now it's uploaded to the api)
-- [ ] After the update uploaded (or x amount of time) send a message to all the participants
+- [x] Create the `/record/{UserUpdateID}` route in the frontend
+- [x] Use the `requestID` in the upload. Validate that it was created first.
+- [ ] Serve the .webm from the frontend `/play/{updateID}`. Should be able to see all user updates
+- [ ] After the update uploaded send a message to all the participants (temporary)
+- [ ] Schedule request and reporting of updates
+- [ ] Create a frontend to add the bot to a workspace
+- [ ] Add user endpoint
+- [ ] Add participants to update from the frontend
+- [ ] Schedule from the frontend

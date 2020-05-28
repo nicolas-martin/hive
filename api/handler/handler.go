@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 
 	"github.com/gin-gonic/gin"
@@ -88,15 +89,15 @@ func (h *Handler) CreateUpdate(c *gin.Context) {
 
 // Upload uploads a file
 func (h *Handler) Upload(c *gin.Context) {
-	updateIDstr := c.PostForm("id")
-	updateID, err := uuid.Parse(updateIDstr)
+	userUpdateIDstr := c.PostForm("id")
+	userUpdateID, err := uuid.Parse(userUpdateIDstr)
 	if err != nil {
-		c.String(http.StatusBadRequest, fmt.Sprintf("Invalid UserUpdate %s", updateIDstr))
+		c.String(http.StatusBadRequest, fmt.Sprintf("Invalid UserUpdate %s", userUpdateIDstr))
 		return
 	}
 
 	// NOTE: Check if the ID received is a valid update
-	v, ok := h.repo.UserUpdateData[updateID]
+	v, ok := h.repo.UserUpdateData[userUpdateID]
 	if !ok {
 		c.String(http.StatusBadRequest, fmt.Sprintf("UserUpdateID not found"))
 		return
@@ -109,15 +110,22 @@ func (h *Handler) Upload(c *gin.Context) {
 	}
 
 	filename := filepath.Base(file.Filename)
-	path := fmt.Sprintf("up/%s", filename)
-	if err := c.SaveUploadedFile(file, path); err != nil {
+	path := fmt.Sprintf("up/%s", v.UpdateID)
+	fullPath := fmt.Sprintf("%s/%s", path, filename)
+	err = os.MkdirAll(path, os.ModePerm)
+	if err != nil {
+		c.String(http.StatusBadRequest, fmt.Sprintf("Error creating the upload folder: %s", err.Error()))
+		return
+	}
+
+	if err := c.SaveUploadedFile(file, fullPath); err != nil {
 		c.String(http.StatusBadRequest, fmt.Sprintf("upload file err: %s", err.Error()))
 		return
 	}
 
 	// NOTE: Update recording URL
-	v.RecordingURL = path
+	v.RecordingURL = fullPath
 
-	c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully with updateID=%s.", file.Filename, updateID))
+	c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully with updateID=%s.", file.Filename, userUpdateID))
 	return
 }
