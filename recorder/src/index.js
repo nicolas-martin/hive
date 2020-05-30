@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './media/app';
+import Player from './media/player/player';
 import { BrowserRouter, Route } from 'react-router-dom'
 
 class Game extends React.Component {
@@ -9,6 +10,7 @@ class Game extends React.Component {
     return (
       <div className="game">
         <Route path="/" exact component={App}/>
+        <Route path="/play" exact component={Player}/>
         <Route path="/record/:id" 
           render={(props) => <App id={props.match.params.id} {...props} />}
         />
