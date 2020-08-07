@@ -1,7 +1,7 @@
 package config
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/kelseyhightower/envconfig"
 )
@@ -13,11 +13,11 @@ type Config struct {
 }
 
 // Load parses the env varaibles into a config struct
-func Load() *Config {
+func Load() (*Config, error) {
 	cfg := Config{}
 	err := envconfig.Process("", &cfg)
 	if err != nil {
-		log.Panic("error procesing env configs")
+		return nil, fmt.Errorf("error processing env config: %w", err)
 	}
-	return &cfg
+	return &cfg, nil
 }

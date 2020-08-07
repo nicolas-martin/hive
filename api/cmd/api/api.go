@@ -20,7 +20,12 @@ import (
 func main() {
 	logger := log.New()
 
-	cfg := config.Load()
+	cfg, err := config.Load()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
 	repo := repo.NewRepo(cfg)
 	handler := handler.NewHandler(cfg, repo)
 	log.Debug("????A?S?SAFSDF")

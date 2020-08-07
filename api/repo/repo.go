@@ -30,7 +30,6 @@ func (r *Repo) UpdateSlackUserIDByUserName(userName string, slackUserID string) 
 		if v.DisplayName == userName {
 			v.SlackUserID = slackUserID
 			return nil
-
 		}
 
 	}

@@ -1,10 +1,12 @@
-import React, { Component } from 'react';
+// import React, { Component } from 'react';
+import React from 'react';
 import MediaCapturer from 'react-multimedia-capture';
 import * as api from '../functions/api';
 
 class AudioExample extends React.Component {
-	constructor() {
-		super();
+  constructor(props) {
+		super(props);
+    console.log(this.props.id)
 		this.state = {
 			granted: false,
 			rejectedReason: '',
@@ -79,7 +81,7 @@ class AudioExample extends React.Component {
 		document.body.appendChild(a);
 		a.click();
 
-    api.Upload(blob);
+    api.Upload(blob, this.props.id);
 	}
 
 	render() {

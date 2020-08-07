@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/gin-gonic/gin v1.6.3
-	github.com/gofrs/uuid v3.3.0+incompatible
+	github.com/gofrs/uuid v3.3.0+incompatible // indirect
 	github.com/google/uuid v1.1.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/kr/pretty v0.1.0 // indirect

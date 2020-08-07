@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
+// import ReactDOM from 'react-dom';
 import AudioExample from './AudioExample';
-import VideoExample from './VideoExample';
-import * as api from '../functions/api';
+// import VideoExample from './VideoExample';
 
 class App extends Component {
   constructor(props) {
