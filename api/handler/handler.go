@@ -2,10 +2,11 @@ package handler
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
-	"path/filepath"
+
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -93,6 +94,9 @@ func (h *Handler) Upload(c *gin.Context) {
 	userUpdateID, err := uuid.Parse(userUpdateIDstr)
 	if err != nil {
 		c.String(http.StatusBadRequest, fmt.Sprintf("Invalid UserUpdate %s", userUpdateIDstr))
+		log.WithFields(log.Fields{
+			"Err": errors.Wrap(err, fmt.Sprintf("invalid UserUpdateID %s", userUpdateIDstr)),
+		}).Error()
 		return
 	}
 
@@ -100,28 +104,49 @@ func (h *Handler) Upload(c *gin.Context) {
 	v, ok := h.repo.UserUpdateData[userUpdateID]
 	if !ok {
 		c.String(http.StatusBadRequest, fmt.Sprintf("UserUpdateID not found"))
+		log.WithFields(log.Fields{
+			"Err": fmt.Sprintf("UserUpdateID not found: %s", userUpdateID),
+		}).Error()
 		return
 	}
 
 	file, err := c.FormFile("file")
 	if err != nil {
 		c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
+		log.WithFields(log.Fields{
+			"Err": errors.Wrap(err, "get form err"),
+		}).Error()
 		return
 	}
 
-	filename := filepath.Base(file.Filename)
-	path := fmt.Sprintf("up/%s", v.UpdateID)
-	fullPath := fmt.Sprintf("%s/%s", path, filename)
+	// filename := filepath.Base(file.Filename)
+	path := fmt.Sprintf("/Users/nmartin/go/src/github.com/nicolas-martin/hive/up/%s", v.UpdateID)
+	fullPath := fmt.Sprintf("%s/%s.webm", path, userUpdateID)
 	err = os.MkdirAll(path, os.ModePerm)
+
 	if err != nil {
 		c.String(http.StatusBadRequest, fmt.Sprintf("Error creating the upload folder: %s", err.Error()))
+		log.WithFields(log.Fields{
+			"Err": errors.Wrap(err, "Error creating the upload folder"),
+		}).Error()
 		return
 	}
+
+	log.WithFields(log.Fields{
+		"Created Folder": fullPath,
+	}).Info()
 
 	if err := c.SaveUploadedFile(file, fullPath); err != nil {
 		c.String(http.StatusBadRequest, fmt.Sprintf("upload file err: %s", err.Error()))
+		log.WithFields(log.Fields{
+			"Err": errors.Wrap(err, "upload file error"),
+		}).Error()
 		return
 	}
+
+	log.WithFields(log.Fields{
+		"UploadedFile": userUpdateID,
+	}).Info()
 
 	// NOTE: Update recording URL
 	v.RecordingURL = fullPath
