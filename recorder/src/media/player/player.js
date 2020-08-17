@@ -3,12 +3,19 @@ import ReactPlayer from 'react-player'
 
 // NOTE: Local videos needs to be in "public" folder
 const VIDEOS = [
-  'ok.webm',
   'https://www.youtube.com/watch?v=C0DPdy98e4c',
-  'https://www.youtube.com/watch?v=Mxesac55Puo'
 ]
 
 class Player extends Component {
+  constructor(props) {
+    super(props);
+    console.log('+++++')
+    console.log(this.props.id)
+    if (!this.props.id){
+      VIDEOS.push(this.props.id)
+    }
+  }
+
 	state = {
     playIndex: 0
   }

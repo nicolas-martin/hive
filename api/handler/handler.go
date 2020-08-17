@@ -51,7 +51,7 @@ func (h *Handler) CreateUpdate(c *gin.Context) {
 	}
 
 	userIDs := make([]string, 0)
-	for _, v := range update.Usernames {
+	for _, v := range update.Users {
 		userID, err := h.slackClient.GetUserID(v)
 		if err != nil {
 			c.String(http.StatusBadRequest, fmt.Sprintf("error finding user %s", v))
@@ -101,11 +101,11 @@ func (h *Handler) Upload(c *gin.Context) {
 	}
 
 	// NOTE: Check if the ID received is a valid update
-	v, ok := h.repo.UserUpdateData[userUpdateID]
-	if !ok {
-		c.String(http.StatusBadRequest, fmt.Sprintf("UserUpdateID not found"))
+	userUpdate, err := h.repo.GetUserUpdate(userUpdateID)
+	if err != nil {
+		c.String(http.StatusBadRequest, err)
 		log.WithFields(log.Fields{
-			"Err": fmt.Sprintf("UserUpdateID not found: %s", userUpdateID),
+			"Err": err,
 		}).Error()
 		return
 	}
@@ -120,7 +120,7 @@ func (h *Handler) Upload(c *gin.Context) {
 	}
 
 	// filename := filepath.Base(file.Filename)
-	path := fmt.Sprintf("/Users/nmartin/go/src/github.com/nicolas-martin/hive/up/%s", v.UpdateID)
+	path := fmt.Sprintf("/Users/nmartin/go/src/github.com/nicolas-martin/hive/up/%s", userUpdate.UpdateID)
 	fullPath := fmt.Sprintf("%s/%s.webm", path, userUpdateID)
 	err = os.MkdirAll(path, os.ModePerm)
 
@@ -149,8 +149,32 @@ func (h *Handler) Upload(c *gin.Context) {
 	}).Info()
 
 	// NOTE: Update recording URL
-	v.RecordingURL = fullPath
+	userUpdate.RecordingURL = fullPath
 
 	c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully with updateID=%s.", file.Filename, userUpdateID))
+
+	// Check if all the members have completed their update
+	if completed, err := h.repo.CheckForCompletedUpdate(userUpdate.UpdateID); completed {
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		users, err := h.repo.GetUsersByUpdateID(userUpdate.UpdateID)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		for _, v := range users {
+			err := h.slackClient.PostMessage(v.SlackUserID, fmt.Sprintf("Your team's update is completed"))
+			if err != nil {
+				c.String(http.StatusInternalServerError, err.Error())
+				return
+			}
+
+		}
+
+	}
 	return
 }

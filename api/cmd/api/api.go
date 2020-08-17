@@ -62,10 +62,10 @@ func setup(r *repo.Repo, cfg *config.Config, h *handler.Handler) {
 		r.AddUser(v)
 	}
 
-	updateID, _ := r.AddUpate(&model.Update{Usernames: userNames})
+	updateID, _ := r.AddUpate(&model.Update{Users: users})
 
-	for _, v := range users {
-		userID, _ := r.GetUserIDBySlackUserID(v.SlackUserID)
+	for _, user := range users {
+		userID, _ := r.GetUserIDBySlackUserID(user.SlackUserID)
 		ud := &model.UserUpdate{
 			UserID:       userID,
 			RecordingURL: "",
@@ -75,7 +75,7 @@ func setup(r *repo.Repo, cfg *config.Config, h *handler.Handler) {
 		udID, _ := r.AddUserUpate(ud)
 		url := fmt.Sprintf("%s/record/%s", cfg.FrontEndURL, udID)
 		msg := fmt.Sprintf("Please record a message for your update %s", url)
-		slackClient.PostMessage(v.SlackUserID, msg)
+		slackClient.PostMessage(user.SlackUserID, msg)
 	}
 
 }

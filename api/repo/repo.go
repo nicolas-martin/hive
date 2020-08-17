@@ -10,39 +10,58 @@ import (
 
 // Repo holds data in memory
 type Repo struct {
-	UserData       map[uuid.UUID]*model.User
-	UserUpdateData map[uuid.UUID]*model.UserUpdate
-	UpdateData     map[uuid.UUID]*model.Update
+	userData       []*model.User
+	userupdateData []*model.UserUpdate
+	updateData     []*model.Update
 }
 
 // NewRepo creater a new Repo
 func NewRepo(cfg *config.Config) *Repo {
-	userdata := make(map[uuid.UUID]*model.User)
-	userupdatedata := make(map[uuid.UUID]*model.UserUpdate)
-	updatedata := make(map[uuid.UUID]*model.Update)
+	userData := make([]*model.User, 0)
+	userupdateData := make([]*model.UserUpdate, 0)
+	updateData := make([]*model.Update, 0)
 	_ = cfg
-	return &Repo{UserData: userdata, UserUpdateData: userupdatedata, UpdateData: updatedata}
+	return &Repo{userData: userData, userupdateData: userupdateData, updateData: updateData}
 }
 
 // AddUser adds a user to be messaged
 func (r *Repo) UpdateSlackUserIDByUserName(userName string, slackUserID string) error {
-	for _, v := range r.UserData {
+	for _, v := range r.userData {
 		if v.DisplayName == userName {
 			v.SlackUserID = slackUserID
 			return nil
 		}
-
 	}
 
 	return fmt.Errorf("Cannot find user with userName %s", userName)
 
 }
 
+func (r *Repo) GetUpdate(updateID uuid.UUID) (*model.Update, error) {
+	for _, v := range r.updateData {
+		if v.UpdateID == updateID {
+			return v, nil
+		}
+
+	}
+	return nil, fmt.Errorf("Cannot get update with ID %s", updateID)
+}
+
+func (r *Repo) GetUserUpdate(userUpdateID uuid.UUID) (*model.UserUpdate, error) {
+	for _, v := range r.userupdateData {
+		if v.UserUpdateID == userUpdateID {
+			return v, nil
+		}
+
+	}
+	return nil, fmt.Errorf("Cannot get userUpdate with ID %s", userUpdateID)
+}
+
 func (r *Repo) GetUserIDBySlackUserID(slackUserID string) (uuid.UUID, error) {
 	var uuid uuid.UUID
-	for k, v := range r.UserData {
+	for _, v := range r.userData {
 		if v.SlackUserID == slackUserID {
-			return k, nil
+			return v.UserID, nil
 		}
 
 	}
@@ -52,19 +71,69 @@ func (r *Repo) GetUserIDBySlackUserID(slackUserID string) (uuid.UUID, error) {
 // AddUser adds a user to be messaged
 func (r *Repo) AddUser(user *model.User) (uuid.UUID, error) {
 	id := uuid.New()
-	r.UserData[id] = user
+
+	user.UserID = id
+	r.userData = append(r.userData, user)
 	return id, nil
 }
 
 // AddUpate adds a user to be messaged
 func (r *Repo) AddUpate(update *model.Update) (uuid.UUID, error) {
 	id := uuid.New()
-	r.UpdateData[id] = update
+	update.UpdateID = id
+	r.updateData = append(r.updateData, update)
 	return id, nil
 }
 
 func (r *Repo) AddUserUpate(userUpdate *model.UserUpdate) (uuid.UUID, error) {
 	id := uuid.New()
-	r.UserUpdateData[id] = userUpdate
+	userUpdate.UserUpdateID = id
+	r.userupdateData = append(r.userupdateData, userUpdate)
 	return id, nil
+}
+
+// GetUsersByUpdateID returns users from updateID. MAYBE I DON'T NEED?
+func (r *Repo) GetUsersByUpdateID(updateID uuid.UUID) ([]*model.User, error) {
+	for _, v := range r.updateData {
+		if v.UpdateID == updateID {
+			return v.Users, nil
+		}
+
+	}
+	return nil, fmt.Errorf("Cannot get Users for update with ID %s", updateID)
+
+}
+
+func (r *Repo) GetUserUpdateByUserIDandUpdateID(updateID uuid.UUID, userID uuid.UUID) (*model.UserUpdate, error) {
+	for _, v := range r.userupdateData {
+		if v.UserID == userID && v.UpdateID == updateID {
+			return v, nil
+
+		}
+
+	}
+	return nil, fmt.Errorf("Cannot get UserUpdate for updateID %s and userID %s", updateID, userID)
+
+}
+
+func (r *Repo) CheckForCompletedUpdate(updateID uuid.UUID) (bool, error) {
+	update, err := r.GetUpdate(updateID)
+	if err != nil {
+		return false, err
+	}
+
+	for _, v := range update.Users {
+		user, err := r.GetUserUpdateByUserIDandUpdateID(updateID, v.UserID)
+		if err != nil {
+			return false, err
+		}
+
+		if len(user.RecordingURL) == 0 {
+			return false, nil
+
+		}
+
+	}
+
+	return true, nil
 }
