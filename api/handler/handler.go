@@ -167,7 +167,7 @@ func (h *Handler) Upload(c *gin.Context) {
 		}
 
 		for _, v := range users {
-			err := h.slackClient.PostMessage(v.SlackUserID, fmt.Sprintf("Your team's update is completed"))
+			err := h.slackClient.PostMessage(v.SlackUserID, fmt.Sprintf("Your team's update is completed at %s/%s", h.frontendURL, userUpdate.UpdateID))
 			if err != nil {
 				c.String(http.StatusInternalServerError, err.Error())
 				return

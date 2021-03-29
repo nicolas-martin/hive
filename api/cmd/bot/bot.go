@@ -10,21 +10,25 @@ import (
 )
 
 func main() {
-	cfg := config.Load()
+	cfg, err := config.Load()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
 	s := client.NewSlack(cfg)
 	r := repo.NewRepo(cfg)
 	r.AddUser(&model.User{DisplayName: "martinni39", SlackUserID: ""})
 
-	for _, v := range r.UserData {
-		userID, err := s.GetUserID(v.DisplayName)
-		if err != nil {
-			log.Fatal(err)
-		}
+	userID, err := s.GetUserID("martinni39")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-		err = s.PostMessage(userID, "Hello world")
-		if err != nil {
-			log.Fatal(err)
-		}
+	// TODO: try out more complex messages
+	err = s.PostMessage(userID, "Hello world")
+	if err != nil {
+		log.Fatal(err)
 	}
 
 }
