@@ -37,6 +37,7 @@ func main() {
 	r.Use(cors.Default())
 	r.GET("/ping", handler.Ping)
 	r.POST("/upload", handler.Upload)
+	r.POST("/update", handler.CreateUpdate)
 	r.POST("/a", func(context *gin.Context) {
 		context.JSON(http.StatusOK, gin.H{"hello": "world"})
 	})

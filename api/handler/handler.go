@@ -50,7 +50,6 @@ func (h *Handler) CreateUpdate(c *gin.Context) {
 		return
 	}
 
-	userIDs := make([]string, 0)
 	for _, v := range update.Users {
 		userID, err := h.slackClient.GetUserID(v.DisplayName)
 		if err != nil {
@@ -58,30 +57,9 @@ func (h *Handler) CreateUpdate(c *gin.Context) {
 			return
 		}
 
-		// NOTE: Update our record of the user
-		// h.repo.UpdateSlackUserIDByUserName(v, userID)
-		userIDs = append(userIDs, userID)
-	}
-
-	for _, v := range userIDs {
-		// TODO: this will probably be done somewhere else
-		userID, _ := h.repo.GetUserIDBySlackUserID(v)
-
-		ud := &model.UserUpdate{
-			UserID:       userID,
-			RecordingURL: "",
-			UpdateID:     updateID,
-		}
-
-		udID, err := h.repo.AddUserUpate(ud)
-		if err != nil {
-			c.String(http.StatusBadRequest, fmt.Sprintf("error creating user update %s", v))
-			return
-		}
-
-		url := fmt.Sprintf("%s/record/%s", h.frontendURL, udID)
+		url := fmt.Sprintf("%s/record/%s", h.frontendURL, updateID)
 		msg := fmt.Sprintf("Please record a message for your update %s", url)
-		h.slackClient.PostMessage(v, msg)
+		h.slackClient.PostMessage(userID, msg)
 	}
 
 	c.String(http.StatusOK, fmt.Sprintf("Created update successfully"))
@@ -148,10 +126,25 @@ func (h *Handler) Upload(c *gin.Context) {
 		"UploadedFile": userUpdateID,
 	}).Info()
 
-	// NOTE: Update recording URL
-	userUpdate.RecordingURL = fullPath
-
 	c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully with updateID=%s.", file.Filename, userUpdateID))
+
+	ud := &model.UserUpdate{
+		UserID:       userUpdate.UserID,
+		RecordingURL: fullPath,
+		UpdateID:     userUpdate.UpdateID,
+	}
+
+	udID, err := h.repo.AddUserUpate(ud)
+	if err != nil {
+		c.String(http.StatusBadRequest, fmt.Sprintf("error creating user update %s", userUpdate))
+		return
+	}
+
+	log.WithFields(log.Fields{
+		"UserUpdateID": udID,
+		"UserID":       userUpdate.UserID,
+		"UpdateID":     userUpdate.UpdateID,
+	}).Info("Saved user update.")
 
 	// Check if all the members have completed their update
 	if completed, err := h.repo.CheckForCompletedUpdate(userUpdate.UpdateID); completed {
