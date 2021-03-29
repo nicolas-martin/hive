@@ -26,9 +26,9 @@ func main() {
 		return
 	}
 
+	s := client.NewSlack(cfg)
 	repo := repo.NewRepo(cfg)
-	handler := handler.NewHandler(cfg, repo)
-	log.Debug("????A?S?SAFSDF")
+	handler := handler.NewHandler(cfg, repo, s)
 
 	gin.DefaultErrorWriter = logger.Writer()
 	gin.DefaultWriter = logger.Writer()

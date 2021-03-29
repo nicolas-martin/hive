@@ -23,18 +23,19 @@ func NewSlack(cfg *config.Config) *SlackClient {
 // PostMessage sends a message to a given userID
 func (s *SlackClient) PostMessage(userID string, message string) error {
 
-	_, _, channelID, err := s.api.OpenIMChannel(userID)
+	params := &slack.OpenConversationParameters{Users: []string{userID}}
+	channel, _, _, err := s.api.OpenConversation(params)
 	if err != nil {
 		return err
 	}
 
-	_, _, err = s.api.PostMessage(channelID, slack.MsgOptionText(message, false))
+	_, _, err = s.api.PostMessage(channel.ID, slack.MsgOptionText(message, false))
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	log.WithFields(log.Fields{
-		"SENT":    channelID,
+		"SENT":    channel.ID,
 		"Message": message,
 	}).Info()
 
