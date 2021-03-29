@@ -7,7 +7,8 @@ class App extends Component {
   constructor(props) {
     super(props);
     console.log('=====')
-    console.log(this.props.id)
+    console.log(this.props.userid)
+    console.log(this.props.updateid)
     this.state = {
       // file: null
     };
@@ -17,7 +18,7 @@ render() {
 		<div>
 			<h1>React Multimedia Capture Test</h1>
 			<hr />
-			<AudioExample id={this.props.id}/> 
+			<AudioExample userid={this.props.userid} updateid={this.props.updateid}/> 
 			<hr />
 		</div>
 	);

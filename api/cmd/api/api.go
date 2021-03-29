@@ -1,7 +1,8 @@
 package main
 
 import (
-	"fmt"
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -42,19 +43,19 @@ func main() {
 		context.JSON(http.StatusOK, gin.H{"hello": "world"})
 	})
 
-	setup(repo, cfg, handler)
+	time.AfterFunc(100*time.Millisecond, func() {
+		setup(repo, cfg, handler)
+	})
 
-	_ = r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+
 }
 
 func setup(r *repo.Repo, cfg *config.Config, h *handler.Handler) {
 	slackClient := client.NewSlack(cfg)
 	users := []*model.User{{DisplayName: "martinni39", SlackUserID: ""}}
 
-	userNames := []string{}
-
 	for _, v := range users {
-		userNames = append(userNames, v.DisplayName)
 		userID, err := slackClient.GetUserID(v.DisplayName)
 		if err != nil {
 			log.Fatal(err)
@@ -65,18 +66,12 @@ func setup(r *repo.Repo, cfg *config.Config, h *handler.Handler) {
 
 	updateID, _ := r.AddUpate(&model.Update{Users: users})
 
-	for _, user := range users {
-		userID, _ := r.GetUserIDBySlackUserID(user.SlackUserID)
-		ud := &model.UserUpdate{
-			UserID:       userID,
-			RecordingURL: "",
-			UpdateID:     updateID,
-		}
-
-		udID, _ := r.AddUserUpate(ud)
-		url := fmt.Sprintf("%s/record/%s", cfg.FrontEndURL, udID)
-		msg := fmt.Sprintf("Please record a message for your update %s", url)
-		slackClient.PostMessage(user.SlackUserID, msg)
+	createUpdate := model.Update{UpdateID: updateID, Users: users}
+	s, _ := json.Marshal(createUpdate)
+	resp, err := http.Post("http://localhost:8080/update", "application/json", bytes.NewReader(s))
+	if err != nil {
+		log.Fatal("error sending post to update", err)
 	}
+	_ = resp
 
 }

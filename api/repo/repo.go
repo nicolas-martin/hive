@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -33,7 +34,7 @@ func (r *Repo) UpdateSlackUserIDByUserName(userName string, slackUserID string) 
 		}
 	}
 
-	return fmt.Errorf("Cannot find user with userName %s", userName)
+	return fmt.Errorf("cannot find user with userName %s", userName)
 
 }
 
@@ -44,7 +45,31 @@ func (r *Repo) GetUpdate(updateID uuid.UUID) (*model.Update, error) {
 		}
 
 	}
-	return nil, fmt.Errorf("Cannot get update with ID %s", updateID)
+	return nil, fmt.Errorf("cannot get update with ID %s", updateID)
+}
+
+func (r *Repo) GetUpdateAndVerifyUser(updateID, userID uuid.UUID) (*model.Update, error) {
+
+	// make sure user hasn't posted an update already
+	for _, v := range r.userupdateData {
+		if v.UserID == userID && v.UpdateID == updateID {
+			return nil, errors.New("user already submitted user update")
+		}
+	}
+
+	for _, v := range r.updateData {
+		if v.UpdateID == updateID {
+			// make sure the user is in the update user list
+			for _, u := range v.Users {
+				if u.UserID == userID {
+					return v, nil
+				}
+			}
+			return nil, errors.New("user not authorized to make update")
+		}
+
+	}
+	return nil, fmt.Errorf("cannot get update with ID %s", updateID)
 }
 
 func (r *Repo) GetUserUpdate(userUpdateID uuid.UUID) (*model.UserUpdate, error) {
@@ -54,7 +79,7 @@ func (r *Repo) GetUserUpdate(userUpdateID uuid.UUID) (*model.UserUpdate, error) 
 		}
 
 	}
-	return nil, fmt.Errorf("Cannot get userUpdate with ID %s", userUpdateID)
+	return nil, fmt.Errorf("cannot get userUpdate with ID %s", userUpdateID)
 }
 
 func (r *Repo) GetUserIDBySlackUserID(slackUserID string) (uuid.UUID, error) {
@@ -65,7 +90,7 @@ func (r *Repo) GetUserIDBySlackUserID(slackUserID string) (uuid.UUID, error) {
 		}
 
 	}
-	return uuid, fmt.Errorf("Cannot get user with name %s", slackUserID)
+	return uuid, fmt.Errorf("cannot get user with name %s", slackUserID)
 }
 
 // AddUser adds a user to be messaged
@@ -100,7 +125,7 @@ func (r *Repo) GetUsersByUpdateID(updateID uuid.UUID) ([]*model.User, error) {
 		}
 
 	}
-	return nil, fmt.Errorf("Cannot get Users for update with ID %s", updateID)
+	return nil, fmt.Errorf("cannot get Users for update with ID %s", updateID)
 
 }
 
@@ -112,7 +137,7 @@ func (r *Repo) GetUserUpdateByUserIDandUpdateID(updateID uuid.UUID, userID uuid.
 		}
 
 	}
-	return nil, fmt.Errorf("Cannot get UserUpdate for updateID %s and userID %s", updateID, userID)
+	return nil, fmt.Errorf("cannot get UserUpdate for updateID %s and userID %s", updateID, userID)
 
 }
 

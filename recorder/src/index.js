@@ -11,8 +11,8 @@ class Game extends React.Component {
       <div className="game">
         <Route path="/" exact component={App}/>
         <Route path="/play" exact component={Player}/>
-        <Route path="/record/:id" 
-          render={(props) => <App id={props.match.params.id} {...props} />}
+        <Route path="/record/:userid/:updateid" 
+          render={(props) => <App userid={props.match.params.userid} updateid={props.match.params.updateid} {...props} />}
         />
       </div>
     );

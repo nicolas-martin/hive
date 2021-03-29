@@ -56,6 +56,6 @@ func (s *SlackClient) GetUserID(displayName string) (string, error) {
 
 	}
 
-	return "", fmt.Errorf("User not found")
+	return "", fmt.Errorf("user not found")
 
 }

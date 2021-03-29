@@ -81,7 +81,7 @@ class AudioExample extends React.Component {
 		document.body.appendChild(a);
 		a.click();
 
-    api.Upload(blob, this.props.id);
+    api.Upload(blob, this.props.userid, this.props.updateid);
 	}
 
 	render() {
