@@ -52,7 +52,7 @@ func (h *Handler) CreateUpdate(c *gin.Context) {
 
 	userIDs := make([]string, 0)
 	for _, v := range update.Users {
-		userID, err := h.slackClient.GetUserID(v)
+		userID, err := h.slackClient.GetUserID(v.DisplayName)
 		if err != nil {
 			c.String(http.StatusBadRequest, fmt.Sprintf("error finding user %s", v))
 			return
@@ -103,7 +103,7 @@ func (h *Handler) Upload(c *gin.Context) {
 	// NOTE: Check if the ID received is a valid update
 	userUpdate, err := h.repo.GetUserUpdate(userUpdateID)
 	if err != nil {
-		c.String(http.StatusBadRequest, err)
+		c.String(http.StatusBadRequest, err.Error())
 		log.WithFields(log.Fields{
 			"Err": err,
 		}).Error()

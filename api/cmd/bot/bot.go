@@ -12,8 +12,7 @@ import (
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
-		log.Println(err)
-		return
+		log.Fatal(err)
 	}
 
 	s := client.NewSlack(cfg)
