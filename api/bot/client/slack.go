@@ -20,7 +20,7 @@ func NewSlack(cfg *config.Config) *SlackClient {
 	return &SlackClient{api: api}
 }
 
-func (s *SlackClient) PostBlock(userID string, userBlocks *slack.Blocks) error {
+func (s *SlackClient) PostAttachement(userID string, userBlocks slack.Attachment) error {
 
 	params := &slack.OpenConversationParameters{Users: []string{userID}}
 	channel, _, _, err := s.api.OpenConversation(params)
@@ -28,7 +28,7 @@ func (s *SlackClient) PostBlock(userID string, userBlocks *slack.Blocks) error {
 		return err
 	}
 
-	_, _, err = s.api.PostMessage(channel.ID, slack.MsgOptionBlocks(userBlocks.BlockSet...))
+	_, _, err = s.api.PostMessage(channel.ID, slack.MsgOptionAttachments(userBlocks))
 	if err != nil {
 		log.Fatal(err)
 	}
