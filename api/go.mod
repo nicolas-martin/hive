@@ -5,7 +5,6 @@ go 1.14
 require (
 	github.com/gin-gonic/gin v1.6.3
 	github.com/google/uuid v1.1.1
-	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/pkg/errors v0.8.0
 	github.com/rs/cors v1.7.0
