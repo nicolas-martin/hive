@@ -6,13 +6,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/nicolas-martin/hive/scheduler/config"
 	"github.com/nicolas-martin/hive/scheduler/model"
+	"github.com/nicolas-martin/hive/scheduler/worker"
 )
 
 type Repo struct {
 	schedule []*model.Schedule
 }
 
-func NewRepo(cfg *config.Config) *Repo {
+func NewRepo(cfg *config.Config, w *worker.Worker) *Repo {
 	schedule := make([]*model.Schedule, 0)
 	return &Repo{schedule: schedule}
 }
@@ -27,9 +28,13 @@ func (r *Repo) GetSchedule(id uuid.UUID) (*model.Schedule, error) {
 	return nil, fmt.Errorf("cannot find schedule with ID %s", id)
 }
 
-func (r *Repo) AddSchedule() (*uuid.UUID, error) {
-	// id := uuid.New()
-	return nil, nil
+func (r *Repo) AddSchedule(s *model.Schedule) (uuid.UUID, error) {
+	id := uuid.New()
+	s.ScheduleID = id
+
+	r.schedule = append(r.schedule, s)
+
+	return id, nil
 
 }
 
