@@ -16,3 +16,4 @@
 - [ ] Add user endpoint
 - [ ] Add participants to update from the frontend
 - [ ] Schedule from the frontend
+- [ ] Add desktop recording (https://github.com/Bunlong/react-screen-capture)

@@ -1,1 +1,0 @@
-curl -X POST -F id=b22bdfb8-728f-4dcc-b134-2aa80fad734c -F file=@undefined.webm http://localhost:8080/upload

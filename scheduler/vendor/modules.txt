@@ -1,0 +1,9 @@
+# github.com/google/uuid v1.3.0
+## explicit
+github.com/google/uuid
+# github.com/kelseyhightower/envconfig v1.4.0
+## explicit
+github.com/kelseyhightower/envconfig
+# github.com/robfig/cron/v3 v3.0.1
+## explicit
+github.com/robfig/cron/v3
